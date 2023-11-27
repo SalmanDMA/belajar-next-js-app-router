@@ -1,19 +1,29 @@
-import { getData } from '@/services/products';
+'use client';
+// import { getData } from '@/services/products';
 import Image from 'next/image';
 import Link from 'next/link';
+import useSWR from 'swr';
 
 type ProductPageProps = { params: { slug: string[] } };
 
-export default async function ProductPage(props: ProductPageProps) {
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export default function ProductPage(props: ProductPageProps) {
  const { params } = props;
 
- const products = await getData('http://localhost:3000/api/product');
+ // const products = await getData(`${process.env.NEXT_PUBLIC_API_URL}/api/product`);
+
+ const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/product`, fetcher);
+
+ const products = {
+  data: data?.data,
+ };
 
  return (
   <main className='grid grid-cols-4 mt-5 place-items-center gap-5 p-5'>
    {/* <h1>{params.slug ? ' Detail Product Page' : 'Product Page'} </h1> */}
-   {products.data.length > 0 &&
-    products.data.map((product: any) => (
+   {products.data?.length > 0 &&
+    products.data?.map((product: any) => (
      <Link href={`/product/detail/${product.id}`} className='w-10/12 max-w-sm bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 my-5' key={product.id}>
       <Image width={500} height={500} loading='lazy' className='p-8 rounded-t-lg object-cover h-96 w-full' src={product.image} alt={product.name} />
       <div className='px-5 pb-5'>
